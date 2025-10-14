@@ -25,7 +25,7 @@ fn test_model_path() -> PathBuf {
 fn test_mlx_backend_unavailable_on_other_platforms() {
     // This test verifies that MLX backend is NOT available on non-Apple Silicon
     // The very fact that this test compiles proves the platform restriction works
-    
+
     // On non-Apple Silicon platforms, MlxBackend should not be accessible
     // This is enforced by conditional compilation
     assert!(true, "MlxBackend correctly unavailable on this platform");
@@ -38,7 +38,7 @@ fn test_mlx_backend_unavailable_on_other_platforms() {
 fn test_mlx_backend_available_on_apple_silicon() {
     let result = MlxBackend::new(test_model_path());
     assert!(result.is_ok(), "MLX must be available on Apple Silicon");
-    
+
     let backend = result.unwrap();
     assert_eq!(backend.variant(), ModelVariant::MLX);
 }
@@ -60,11 +60,11 @@ async fn test_unified_memory_usage() {
     // - Metal device memory type
     // - No explicit CPU->GPU memory transfers
     // - Zero-copy tensor operations
-    
+
     // This test will fail until MLX implementation is complete
     let config = EmbeddedConfig::default();
     let result = mlx.infer("test prompt", &config).await;
-    
+
     // Should succeed and demonstrate unified memory efficiency
     assert!(result.is_ok(), "Inference must work with unified memory");
 }
@@ -134,7 +134,7 @@ async fn test_mlx_first_token_latency() {
     let first_response_time = start.elapsed();
 
     assert!(result.is_ok(), "Inference must succeed");
-    
+
     // For non-streaming, we check that total time is reasonable
     // In streaming implementation, this would check first token specifically
     assert!(
@@ -155,7 +155,10 @@ async fn test_metal_error_handling() {
 
     // Model loading should fail gracefully
     let load_result = mlx.load().await;
-    assert!(load_result.is_err(), "Must handle invalid model path gracefully");
+    assert!(
+        load_result.is_err(),
+        "Must handle invalid model path gracefully"
+    );
 
     // Error should be descriptive
     let error = load_result.unwrap_err();
@@ -175,14 +178,17 @@ fn test_gguf_q4_support() {
     // Test model path validation for GGUF format
     let gguf_path = PathBuf::from("/tmp/model-q4_k_m.gguf");
     let mlx = MlxBackend::new(gguf_path);
-    
+
     assert!(mlx.is_ok(), "Must accept GGUF model paths");
-    
+
     // Test other quantization levels
     let q8_path = PathBuf::from("/tmp/model-q8_0.gguf");
     let mlx_q8 = MlxBackend::new(q8_path);
-    
-    assert!(mlx_q8.is_ok(), "Must support different GGUF quantization levels");
+
+    assert!(
+        mlx_q8.is_ok(),
+        "Must support different GGUF quantization levels"
+    );
 }
 
 /// CR-MLX-008: Concurrent Request Handling
@@ -209,7 +215,9 @@ async fn test_concurrent_request_handling() {
 
         let handle = tokio::spawn(async move {
             let mlx_guard = mlx_clone.lock().await;
-            mlx_guard.infer(&format!("ls -l {}", i), &config_clone).await
+            mlx_guard
+                .infer(&format!("ls -l {}", i), &config_clone)
+                .await
         });
 
         handles.push(handle);
@@ -248,7 +256,7 @@ async fn test_resource_cleanup_gpu() {
 
     // Drop should also clean up
     drop(mlx);
-    
+
     // In a real test, we'd verify GPU memory is freed
     // This is a placeholder for that verification
 }
@@ -271,8 +279,14 @@ async fn test_temperature_control() {
     let low_temp_result = mlx.infer(prompt, &low_temp_config).await;
     let high_temp_result = mlx.infer(prompt, &high_temp_config).await;
 
-    assert!(low_temp_result.is_ok(), "Low temperature inference must work");
-    assert!(high_temp_result.is_ok(), "High temperature inference must work");
+    assert!(
+        low_temp_result.is_ok(),
+        "Low temperature inference must work"
+    );
+    assert!(
+        high_temp_result.is_ok(),
+        "High temperature inference must work"
+    );
 
     // With different temperatures, responses should potentially differ
     // (This is a statistical test - might occasionally fail)
@@ -280,7 +294,10 @@ async fn test_temperature_control() {
     let high_temp_output = high_temp_result.unwrap();
 
     assert!(!low_temp_output.is_empty(), "Low temp must generate output");
-    assert!(!high_temp_output.is_empty(), "High temp must generate output");
+    assert!(
+        !high_temp_output.is_empty(),
+        "High temp must generate output"
+    );
 }
 
 /// Additional test: Model variant correctness
@@ -297,7 +314,11 @@ fn test_mlx_variant_correctness() {
 fn test_mlx_types_unavailable() {
     // This test ensures that MlxBackend types are not available on non-Apple Silicon
     // The fact this test compiles without referencing MlxBackend proves the isolation
-    
+
     let variant = ModelVariant::detect();
-    assert_eq!(variant, ModelVariant::CPU, "Non-Apple Silicon must use CPU variant");
+    assert_eq!(
+        variant,
+        ModelVariant::CPU,
+        "Non-Apple Silicon must use CPU variant"
+    );
 }

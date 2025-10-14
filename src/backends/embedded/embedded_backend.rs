@@ -30,11 +30,12 @@ impl EmbeddedModelBackend {
         let model_loader = ModelLoader::new().map_err(|e| GeneratorError::ConfigError {
             message: format!("Failed to initialize model loader: {}", e),
         })?;
-        let model_path = model_loader.get_embedded_model_path().map_err(|e| {
-            GeneratorError::ConfigError {
-                message: format!("Failed to get model path: {}", e),
-            }
-        })?;
+        let model_path =
+            model_loader
+                .get_embedded_model_path()
+                .map_err(|e| GeneratorError::ConfigError {
+                    message: format!("Failed to get model path: {}", e),
+                })?;
 
         Self::with_variant_and_path(variant, model_path)
     }
@@ -47,20 +48,16 @@ impl EmbeddedModelBackend {
         // Create the appropriate backend based on variant
         let backend: Box<dyn InferenceBackend> = match variant {
             #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-            ModelVariant::MLX => {
-                Box::new(MlxBackend::new(model_path.clone()).map_err(|e| {
-                    GeneratorError::ConfigError {
-                        message: format!("Failed to create MLX backend: {}", e),
-                    }
-                })?)
-            }
-            ModelVariant::CPU => {
-                Box::new(CpuBackend::new(model_path.clone()).map_err(|e| {
-                    GeneratorError::ConfigError {
-                        message: format!("Failed to create CPU backend: {}", e),
-                    }
-                })?)
-            }
+            ModelVariant::MLX => Box::new(MlxBackend::new(model_path.clone()).map_err(|e| {
+                GeneratorError::ConfigError {
+                    message: format!("Failed to create MLX backend: {}", e),
+                }
+            })?),
+            ModelVariant::CPU => Box::new(CpuBackend::new(model_path.clone()).map_err(|e| {
+                GeneratorError::ConfigError {
+                    message: format!("Failed to create CPU backend: {}", e),
+                }
+            })?),
         };
 
         let model_loader = ModelLoader::new().map_err(|e| GeneratorError::ConfigError {
@@ -104,17 +101,23 @@ impl EmbeddedModelBackend {
 
         // Load the model in the backend
         let mut backend = self.backend.lock().await;
-        backend.load().await.map_err(|e| GeneratorError::GenerationFailed {
-            details: format!("Failed to load model: {}", e),
-        })
+        backend
+            .load()
+            .await
+            .map_err(|e| GeneratorError::GenerationFailed {
+                details: format!("Failed to load model: {}", e),
+            })
     }
 
     /// Explicitly unload the model to free memory
     pub async fn unload_model(&mut self) -> Result<(), GeneratorError> {
         let mut backend = self.backend.lock().await;
-        backend.unload().await.map_err(|e| GeneratorError::Internal {
-            message: format!("Failed to unload model: {}", e),
-        })
+        backend
+            .unload()
+            .await
+            .map_err(|e| GeneratorError::Internal {
+                message: format!("Failed to unload model: {}", e),
+            })
     }
 
     /// Generate system prompt for shell command generation
@@ -208,9 +211,12 @@ impl CommandGenerator for EmbeddedModelBackend {
         let mut backend = self.backend.lock().await;
 
         // Load model if not already loaded (lazy loading)
-        backend.load().await.map_err(|e| GeneratorError::GenerationFailed {
-            details: format!("Failed to load model: {}", e),
-        })?;
+        backend
+            .load()
+            .await
+            .map_err(|e| GeneratorError::GenerationFailed {
+                details: format!("Failed to load model: {}", e),
+            })?;
 
         // Run inference
         let raw_response = backend
@@ -265,9 +271,12 @@ impl CommandGenerator for EmbeddedModelBackend {
     /// Perform any necessary cleanup when shutting down
     async fn shutdown(&self) -> Result<(), GeneratorError> {
         let mut backend = self.backend.lock().await;
-        backend.unload().await.map_err(|e| GeneratorError::Internal {
-            message: format!("Failed to unload model: {}", e),
-        })?;
+        backend
+            .unload()
+            .await
+            .map_err(|e| GeneratorError::Internal {
+                message: format!("Failed to unload model: {}", e),
+            })?;
 
         tracing::debug!("Embedded model backend shutdown complete");
         Ok(())
@@ -288,7 +297,10 @@ mod tests {
     #[test]
     fn test_embedded_backend_creation() {
         let backend = EmbeddedModelBackend::new();
-        assert!(backend.is_ok(), "Should create embedded backend successfully");
+        assert!(
+            backend.is_ok(),
+            "Should create embedded backend successfully"
+        );
 
         if let Ok(backend) = backend {
             // Verify variant matches platform
@@ -335,7 +347,10 @@ mod tests {
     #[tokio::test]
     async fn test_is_available_always_true() {
         let backend = EmbeddedModelBackend::new().unwrap();
-        assert!(backend.is_available().await, "Embedded backend must always be available");
+        assert!(
+            backend.is_available().await,
+            "Embedded backend must always be available"
+        );
     }
 
     #[test]

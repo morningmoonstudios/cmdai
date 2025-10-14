@@ -48,9 +48,11 @@ pub use logging::{LogConfig, LogConfigBuilder, LogError, LogFormat, LogOutput, L
 pub use model_loader::ModelLoader;
 
 // Re-export backend types
-pub use backends::{BackendInfo as BackendInfoTrait, CommandGenerator, GeneratorError};
-pub use backends::embedded::{CpuBackend, EmbeddedConfig, EmbeddedModelBackend, InferenceBackend, ModelVariant};
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 pub use backends::embedded::MlxBackend;
+pub use backends::embedded::{
+    CpuBackend, EmbeddedConfig, EmbeddedModelBackend, InferenceBackend, ModelVariant,
+};
 #[cfg(feature = "remote-backends")]
 pub use backends::remote::{OllamaBackend, VllmBackend};
+pub use backends::{BackendInfo as BackendInfoTrait, CommandGenerator, GeneratorError};

@@ -1,7 +1,7 @@
 // Model loading and distribution strategy for embedded models
 
-use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
+use std::path::{Path, PathBuf};
 use tracing::{debug, info, warn};
 
 use crate::backends::embedded::ModelVariant;
@@ -10,6 +10,7 @@ use crate::backends::embedded::ModelVariant;
 const DEFAULT_MODEL_Q4: &str = "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf";
 
 /// Alternative model filename for Q8_0 quantization (higher quality)
+#[allow(dead_code)]
 const DEFAULT_MODEL_Q8: &str = "qwen2.5-coder-1.5b-instruct-q8_0.gguf";
 
 /// Hugging Face model repository for GGUF files
@@ -43,8 +44,7 @@ impl ModelLoader {
         let cmdai_cache = cache_base.join("cmdai").join("models");
 
         // Create cache directory if it doesn't exist
-        std::fs::create_dir_all(&cmdai_cache)
-            .context("Failed to create model cache directory")?;
+        std::fs::create_dir_all(&cmdai_cache).context("Failed to create model cache directory")?;
 
         Ok(cmdai_cache)
     }
@@ -76,7 +76,10 @@ impl ModelLoader {
         }
 
         // Return cache path where model should be downloaded
-        info!("Model not found, will download to: {}", cached_path.display());
+        info!(
+            "Model not found, will download to: {}",
+            cached_path.display()
+        );
         Ok(cached_path)
     }
 
@@ -115,8 +118,7 @@ impl ModelLoader {
             .context("Failed to download model from Hugging Face Hub")?;
 
         // Copy to cache directory
-        std::fs::copy(&downloaded, dest_path)
-            .context("Failed to copy model to cache directory")?;
+        std::fs::copy(&downloaded, dest_path).context("Failed to copy model to cache directory")?;
 
         info!("Model downloaded successfully to: {}", dest_path.display());
 
@@ -158,13 +160,16 @@ impl ModelLoader {
         }
 
         // Basic validation: check file size (should be > 1GB for Q4_K_M)
-        let metadata = std::fs::metadata(model_path)
-            .context("Failed to read model file metadata")?;
+        let metadata =
+            std::fs::metadata(model_path).context("Failed to read model file metadata")?;
 
         let size_mb = metadata.len() / (1024 * 1024);
 
         if size_mb < 900 {
-            warn!("Model file seems too small: {}MB (expected ~1100MB)", size_mb);
+            warn!(
+                "Model file seems too small: {}MB (expected ~1100MB)",
+                size_mb
+            );
             return Ok(false);
         }
 

@@ -190,10 +190,7 @@ Request: {}
 
         // Add authentication if available
         if let Some(api_key) = &self.api_key {
-            req_builder = req_builder.header(
-                header::AUTHORIZATION,
-                format!("Bearer {}", api_key),
-            );
+            req_builder = req_builder.header(header::AUTHORIZATION, format!("Bearer {}", api_key));
         }
 
         let response = req_builder.send().await.map_err(|e| {
@@ -221,11 +218,13 @@ Request: {}
             });
         }
 
-        let vllm_response: VllmResponse = response.json().await.map_err(|e| {
-            GeneratorError::ParseError {
-                content: format!("Failed to parse vLLM response: {}", e),
-            }
-        })?;
+        let vllm_response: VllmResponse =
+            response
+                .json()
+                .await
+                .map_err(|e| GeneratorError::ParseError {
+                    content: format!("Failed to parse vLLM response: {}", e),
+                })?;
 
         if let Some(choice) = vllm_response.choices.first() {
             Ok(choice.message.content.clone())
@@ -242,7 +241,10 @@ Request: {}
         request: &CommandRequest,
     ) -> Result<GeneratedCommand, GeneratorError> {
         // Try vLLM first
-        match self.call_vllm_api(&self.create_system_prompt(request)).await {
+        match self
+            .call_vllm_api(&self.create_system_prompt(request))
+            .await
+        {
             Ok(response) => {
                 match self.parse_command_response(&response) {
                     Ok(command) => {
@@ -265,7 +267,7 @@ Request: {}
             }
             Err(vllm_error) => {
                 tracing::warn!("vLLM backend failed: {}", vllm_error);
-                
+
                 // For authentication errors, don't retry or fallback immediately
                 if let GeneratorError::BackendUnavailable { ref reason } = vllm_error {
                     if reason.contains("Authentication failed") {
@@ -280,7 +282,8 @@ Request: {}
         if let Some(fallback) = &self.embedded_fallback {
             tracing::info!("Falling back to embedded backend");
             let mut fallback_result = fallback.generate_command(request).await?;
-            fallback_result.backend_used = format!("Embedded (vLLM fallback from {})", self.model_name);
+            fallback_result.backend_used =
+                format!("Embedded (vLLM fallback from {})", self.model_name);
             return Ok(fallback_result);
         }
 
@@ -298,10 +301,10 @@ impl CommandGenerator for VllmBackend {
         request: &CommandRequest,
     ) -> Result<GeneratedCommand, GeneratorError> {
         let start_time = std::time::Instant::now();
-        
+
         let mut result = self.generate_with_fallback(request).await?;
         result.generation_time_ms = start_time.elapsed().as_millis() as u64;
-        
+
         Ok(result)
     }
 
@@ -360,7 +363,7 @@ mod tests {
     fn test_parse_valid_json() {
         let url = Url::parse("https://api.example.com").unwrap();
         let backend = VllmBackend::new(url, "test".to_string()).unwrap();
-        
+
         let response = r#"{"cmd": "grep -r 'pattern' ."}"#;
         let result = backend.parse_command_response(response);
         assert_eq!(result.unwrap(), "grep -r 'pattern' .");
@@ -370,8 +373,9 @@ mod tests {
     fn test_parse_embedded_json() {
         let url = Url::parse("https://api.example.com").unwrap();
         let backend = VllmBackend::new(url, "test".to_string()).unwrap();
-        
-        let response = r#"Sure! Here's the command: {"cmd": "sort file.txt"} Let me know if you need help."#;
+
+        let response =
+            r#"Sure! Here's the command: {"cmd": "sort file.txt"} Let me know if you need help."#;
         let result = backend.parse_command_response(response);
         assert_eq!(result.unwrap(), "sort file.txt");
     }
@@ -380,7 +384,7 @@ mod tests {
     fn test_parse_invalid_response() {
         let url = Url::parse("https://api.example.com").unwrap();
         let backend = VllmBackend::new(url, "test".to_string()).unwrap();
-        
+
         let response = "I can't generate a command for that request.";
         let result = backend.parse_command_response(response);
         assert!(result.is_err());

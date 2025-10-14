@@ -67,7 +67,11 @@ async fn test_fallback_to_embedded_on_connection_failure() {
     use std::path::PathBuf;
 
     // Create embedded fallback backend
-    let embedded = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), PathBuf::from("/tmp/test_model.gguf")).unwrap();
+    let embedded = EmbeddedModelBackend::with_variant_and_path(
+        ModelVariant::detect(),
+        PathBuf::from("/tmp/test_model.gguf"),
+    )
+    .unwrap();
     let embedded_arc: Arc<dyn CommandGenerator> = Arc::new(embedded);
 
     // Create Ollama backend with unreachable URL
@@ -103,7 +107,11 @@ async fn test_retry_before_fallback() {
     use cmdai::backends::embedded::{EmbeddedModelBackend, ModelVariant};
     use std::path::PathBuf;
 
-    let embedded = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), PathBuf::from("/tmp/test_model.gguf")).unwrap();
+    let embedded = EmbeddedModelBackend::with_variant_and_path(
+        ModelVariant::detect(),
+        PathBuf::from("/tmp/test_model.gguf"),
+    )
+    .unwrap();
     let embedded_arc: Arc<dyn CommandGenerator> = Arc::new(embedded);
 
     let ollama = OllamaBackend::new(
@@ -161,8 +169,8 @@ async fn test_ollama_generate_command_success() {
     )
     .unwrap();
 
-    let request = CommandRequest::new("list all files", ShellType::Bash)
-        .with_safety(SafetyLevel::Moderate);
+    let request =
+        CommandRequest::new("list all files", ShellType::Bash).with_safety(SafetyLevel::Moderate);
 
     let result = ollama.generate_command(&request).await;
 
@@ -212,9 +220,15 @@ fn test_ollama_backend_info() {
 
     assert_eq!(info.backend_type, cmdai::models::BackendType::Ollama);
     assert_eq!(info.model_name, "codellama:7b");
-    assert!(!info.supports_streaming, "Ollama backend doesn't support streaming");
+    assert!(
+        !info.supports_streaming,
+        "Ollama backend doesn't support streaming"
+    );
     assert!(info.max_tokens > 0, "Max tokens must be positive");
-    assert!(info.typical_latency_ms > 0, "Latency estimate must be positive");
+    assert!(
+        info.typical_latency_ms > 0,
+        "Latency estimate must be positive"
+    );
 }
 
 /// Contract: Graceful shutdown
@@ -253,7 +267,9 @@ async fn test_ollama_invalid_model_error() {
     if let Err(error) = result {
         let error_msg = error.to_string();
         assert!(
-            error_msg.contains("model") || error_msg.contains("not found") || error_msg.contains("failed"),
+            error_msg.contains("model")
+                || error_msg.contains("not found")
+                || error_msg.contains("failed"),
             "Error should mention model issue: {}",
             error_msg
         );

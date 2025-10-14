@@ -9,6 +9,7 @@ use crate::backends::GeneratorError;
 
 /// Candle-backed inference state (placeholder for actual Candle types)
 struct CandleModelState {
+    #[allow(dead_code)]
     loaded: bool,
 }
 
@@ -28,7 +29,7 @@ impl CpuBackend {
             });
         }
 
-        Ok(Self { 
+        Ok(Self {
             model_path,
             model_state: Arc::new(Mutex::new(None)),
         })
@@ -40,10 +41,13 @@ impl InferenceBackend for CpuBackend {
     async fn infer(&self, prompt: &str, config: &EmbeddedConfig) -> Result<String, GeneratorError> {
         // Check if model is loaded (scope the lock properly)
         {
-            let model_state = self.model_state.lock().map_err(|_| GeneratorError::Internal {
-                message: "Failed to acquire model state lock".to_string(),
-            })?;
-            
+            let model_state = self
+                .model_state
+                .lock()
+                .map_err(|_| GeneratorError::Internal {
+                    message: "Failed to acquire model state lock".to_string(),
+                })?;
+
             if model_state.is_none() {
                 return Err(GeneratorError::GenerationFailed {
                     details: "Model not loaded. Call load() first".to_string(),
@@ -83,10 +87,13 @@ impl InferenceBackend for CpuBackend {
     async fn load(&mut self) -> Result<(), GeneratorError> {
         // Check if already loaded and return early if so
         {
-            let model_state = self.model_state.lock().map_err(|_| GeneratorError::Internal {
-                message: "Failed to acquire model state lock".to_string(),
-            })?;
-            
+            let model_state = self
+                .model_state
+                .lock()
+                .map_err(|_| GeneratorError::Internal {
+                    message: "Failed to acquire model state lock".to_string(),
+                })?;
+
             if model_state.is_some() {
                 tracing::debug!("CPU model already loaded");
                 return Ok(());
@@ -105,9 +112,12 @@ impl InferenceBackend for CpuBackend {
 
         // Set the model as loaded
         {
-            let mut model_state = self.model_state.lock().map_err(|_| GeneratorError::Internal {
-                message: "Failed to acquire model state lock".to_string(),
-            })?;
+            let mut model_state =
+                self.model_state
+                    .lock()
+                    .map_err(|_| GeneratorError::Internal {
+                        message: "Failed to acquire model state lock".to_string(),
+                    })?;
             *model_state = Some(CandleModelState { loaded: true });
         } // Lock released here
 
@@ -118,10 +128,13 @@ impl InferenceBackend for CpuBackend {
     async fn unload(&mut self) -> Result<(), GeneratorError> {
         // Check if already unloaded
         {
-            let model_state = self.model_state.lock().map_err(|_| GeneratorError::Internal {
-                message: "Failed to acquire model state lock".to_string(),
-            })?;
-            
+            let model_state = self
+                .model_state
+                .lock()
+                .map_err(|_| GeneratorError::Internal {
+                    message: "Failed to acquire model state lock".to_string(),
+                })?;
+
             if model_state.is_none() {
                 tracing::debug!("CPU model already unloaded");
                 return Ok(());
@@ -133,9 +146,12 @@ impl InferenceBackend for CpuBackend {
 
         // Unload the model
         {
-            let mut model_state = self.model_state.lock().map_err(|_| GeneratorError::Internal {
-                message: "Failed to acquire model state lock".to_string(),
-            })?;
+            let mut model_state =
+                self.model_state
+                    .lock()
+                    .map_err(|_| GeneratorError::Internal {
+                        message: "Failed to acquire model state lock".to_string(),
+                    })?;
             *model_state = None;
         } // Lock released here
 

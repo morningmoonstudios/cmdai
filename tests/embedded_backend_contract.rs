@@ -33,8 +33,8 @@ async fn test_offline_operation_no_network_calls() {
 
     let backend = create_test_backend().expect("Failed to create backend");
 
-    let request = CommandRequest::new("list files", ShellType::Bash)
-        .with_safety(SafetyLevel::Moderate);
+    let request =
+        CommandRequest::new("list files", ShellType::Bash).with_safety(SafetyLevel::Moderate);
 
     let result = backend.generate_command(&request).await;
 
@@ -42,8 +42,14 @@ async fn test_offline_operation_no_network_calls() {
     assert!(result.is_ok(), "Must work offline without network");
 
     let command = result.unwrap();
-    assert!(!command.command.is_empty(), "Must generate non-empty command");
-    assert_eq!(command.backend_used, "embedded", "Must report embedded backend");
+    assert!(
+        !command.command.is_empty(),
+        "Must generate non-empty command"
+    );
+    assert_eq!(
+        command.backend_used, "embedded",
+        "Must report embedded backend"
+    );
 }
 
 /// CR-EMB-002: Zero-Config Immediate Availability
@@ -126,7 +132,11 @@ fn test_platform_detection_automatic() {
     );
 
     #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
-    assert_eq!(variant, ModelVariant::CPU, "Must detect CPU on other platforms");
+    assert_eq!(
+        variant,
+        ModelVariant::CPU,
+        "Must detect CPU on other platforms"
+    );
 }
 
 /// CR-EMB-005: Safety Validator Integration
@@ -177,7 +187,8 @@ async fn test_lazy_loading_on_first_inference() {
 async fn test_error_handling_model_load_failure() {
     // Try to create backend with non-existent model
     let invalid_path = PathBuf::from("/nonexistent/model.gguf");
-    let backend_result = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), invalid_path);
+    let backend_result =
+        EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), invalid_path);
 
     // Constructor should either:
     // 1. Return error if model path is validated during construction, OR
@@ -197,7 +208,9 @@ async fn test_error_handling_model_load_failure() {
             // Error message should be descriptive
             let error_msg = e.to_string();
             assert!(
-                error_msg.contains("model") || error_msg.contains("load") || error_msg.contains("file"),
+                error_msg.contains("model")
+                    || error_msg.contains("load")
+                    || error_msg.contains("file"),
                 "Error message should be descriptive: {}",
                 error_msg
             );
@@ -270,9 +283,15 @@ fn test_backend_info_correctness() {
 
     // Verify BackendInfo fields
     assert_eq!(info.model_name, "qwen2.5-coder-1.5b-instruct-q4_k_m");
-    assert!(!info.supports_streaming, "Embedded model doesn't support streaming");
+    assert!(
+        !info.supports_streaming,
+        "Embedded model doesn't support streaming"
+    );
     assert!(info.max_tokens > 0, "Max tokens must be positive");
-    assert!(info.typical_latency_ms > 0, "Latency estimate must be positive");
+    assert!(
+        info.typical_latency_ms > 0,
+        "Latency estimate must be positive"
+    );
 }
 
 /// Additional test: Configuration builder pattern

@@ -150,11 +150,12 @@ Request: {}
             },
         };
 
-        let url = self.base_url.join("/api/generate").map_err(|e| {
-            GeneratorError::ConfigError {
+        let url = self
+            .base_url
+            .join("/api/generate")
+            .map_err(|e| GeneratorError::ConfigError {
                 message: format!("Invalid base URL: {}", e),
-            }
-        })?;
+            })?;
 
         let response = self
             .client
@@ -180,11 +181,13 @@ Request: {}
             });
         }
 
-        let ollama_response: OllamaResponse = response.json().await.map_err(|e| {
-            GeneratorError::ParseError {
-                content: format!("Failed to parse Ollama response: {}", e),
-            }
-        })?;
+        let ollama_response: OllamaResponse =
+            response
+                .json()
+                .await
+                .map_err(|e| GeneratorError::ParseError {
+                    content: format!("Failed to parse Ollama response: {}", e),
+                })?;
 
         Ok(ollama_response.response)
     }
@@ -195,7 +198,10 @@ Request: {}
         request: &CommandRequest,
     ) -> Result<GeneratedCommand, GeneratorError> {
         // Try Ollama first
-        match self.call_ollama_api(&self.create_system_prompt(request)).await {
+        match self
+            .call_ollama_api(&self.create_system_prompt(request))
+            .await
+        {
             Ok(response) => {
                 match self.parse_command_response(&response) {
                     Ok(command) => {
@@ -226,7 +232,8 @@ Request: {}
         if let Some(fallback) = &self.embedded_fallback {
             tracing::info!("Falling back to embedded backend");
             let mut fallback_result = fallback.generate_command(request).await?;
-            fallback_result.backend_used = format!("Embedded (Ollama fallback from {})", self.model_name);
+            fallback_result.backend_used =
+                format!("Embedded (Ollama fallback from {})", self.model_name);
             return Ok(fallback_result);
         }
 
@@ -244,10 +251,10 @@ impl CommandGenerator for OllamaBackend {
         request: &CommandRequest,
     ) -> Result<GeneratedCommand, GeneratorError> {
         let start_time = std::time::Instant::now();
-        
+
         let mut result = self.generate_with_fallback(request).await?;
         result.generation_time_ms = start_time.elapsed().as_millis() as u64;
-        
+
         Ok(result)
     }
 
@@ -297,7 +304,7 @@ mod tests {
     fn test_parse_valid_json() {
         let url = Url::parse("http://localhost:11434").unwrap();
         let backend = OllamaBackend::new(url, "test".to_string()).unwrap();
-        
+
         let response = r#"{"cmd": "ls -la"}"#;
         let result = backend.parse_command_response(response);
         assert_eq!(result.unwrap(), "ls -la");
@@ -307,7 +314,7 @@ mod tests {
     fn test_parse_embedded_json() {
         let url = Url::parse("http://localhost:11434").unwrap();
         let backend = OllamaBackend::new(url, "test".to_string()).unwrap();
-        
+
         let response = r#"Here is the command: {"cmd": "find . -name '*.rs'"} Hope this helps!"#;
         let result = backend.parse_command_response(response);
         assert_eq!(result.unwrap(), "find . -name '*.rs'");
@@ -317,7 +324,7 @@ mod tests {
     fn test_parse_invalid_response() {
         let url = Url::parse("http://localhost:11434").unwrap();
         let backend = OllamaBackend::new(url, "test".to_string()).unwrap();
-        
+
         let response = "This is not a valid JSON response";
         let result = backend.parse_command_response(response);
         assert!(result.is_err());

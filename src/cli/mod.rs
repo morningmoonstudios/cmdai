@@ -112,7 +112,7 @@ pub trait IntoCliArgs {
 impl CliApp {
     /// Create new CLI application instance
     ///
-    /// Uses configuration-driven backend selection with embedded model as primary 
+    /// Uses configuration-driven backend selection with embedded model as primary
     /// and optional remote backend fallbacks.
     pub async fn new() -> Result<Self, CliError> {
         Self::with_config(CliConfig::default()).await
@@ -121,17 +121,16 @@ impl CliApp {
     /// Create CLI application with custom configuration
     pub async fn with_config(config: CliConfig) -> Result<Self, CliError> {
         // Load user configuration to determine backend preferences
-        let config_manager = crate::config::ConfigManager::new().map_err(|e| {
-            CliError::ConfigurationError {
+        let config_manager =
+            crate::config::ConfigManager::new().map_err(|e| CliError::ConfigurationError {
                 message: format!("Failed to create config manager: {}", e),
-            }
-        })?;
+            })?;
 
-        let user_config = config_manager.load().map_err(|e| {
-            CliError::ConfigurationError {
+        let user_config = config_manager
+            .load()
+            .map_err(|e| CliError::ConfigurationError {
                 message: format!("Failed to load configuration: {}", e),
-            }
-        })?;
+            })?;
 
         // Create backend based on configuration
         let backend = Self::create_backend(&user_config).await?;
@@ -151,11 +150,13 @@ impl CliApp {
     }
 
     /// Create appropriate backend based on user configuration
-    async fn create_backend(_user_config: &crate::models::UserConfiguration) -> Result<Box<dyn CommandGenerator>, CliError> {
+    async fn create_backend(
+        _user_config: &crate::models::UserConfiguration,
+    ) -> Result<Box<dyn CommandGenerator>, CliError> {
         // For test builds, use mock backend
         #[cfg(any(test, debug_assertions))]
         {
-            return Ok(Box::new(MockCommandGenerator::new()));
+            Ok(Box::new(MockCommandGenerator::new()))
         }
 
         // Production backend selection
@@ -168,7 +169,8 @@ impl CliApp {
             let embedded_backend = EmbeddedModelBackend::with_variant_and_path(
                 ModelVariant::detect(),
                 std::env::temp_dir().join("cmdai_model.gguf"), // TODO: Use proper model cache
-            ).map_err(|e| CliError::ConfigurationError {
+            )
+            .map_err(|e| CliError::ConfigurationError {
                 message: format!("Failed to create embedded backend: {}", e),
             })?;
 
@@ -182,7 +184,7 @@ impl CliApp {
 
                 // TODO: Add backend preference to user configuration
                 // For now, try Ollama first, then vLLM, then embedded
-                
+
                 if let Ok(ollama_url) = Url::parse("http://localhost:11434") {
                     let ollama_backend = OllamaBackend::new(ollama_url, "codellama:7b".to_string())
                         .map_err(|e| CliError::ConfigurationError {
@@ -197,11 +199,12 @@ impl CliApp {
                 }
 
                 if let Ok(vllm_url) = Url::parse("http://localhost:8000") {
-                    let vllm_backend = VllmBackend::new(vllm_url, "codellama/CodeLlama-7b-hf".to_string())
-                        .map_err(|e| CliError::ConfigurationError {
-                            message: format!("Failed to create vLLM backend: {}", e),
-                        })?
-                        .with_embedded_fallback(embedded_arc.clone());
+                    let vllm_backend =
+                        VllmBackend::new(vllm_url, "codellama/CodeLlama-7b-hf".to_string())
+                            .map_err(|e| CliError::ConfigurationError {
+                                message: format!("Failed to create vLLM backend: {}", e),
+                            })?
+                            .with_embedded_fallback(embedded_arc.clone());
 
                     if vllm_backend.is_available().await {
                         tracing::info!("Using vLLM backend with embedded fallback");

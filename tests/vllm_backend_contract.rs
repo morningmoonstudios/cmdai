@@ -98,7 +98,11 @@ async fn test_fallback_to_embedded_on_connection_failure() {
     use std::path::PathBuf;
 
     // Create embedded fallback backend
-    let embedded = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), PathBuf::from("/tmp/test_model.gguf")).unwrap();
+    let embedded = EmbeddedModelBackend::with_variant_and_path(
+        ModelVariant::detect(),
+        PathBuf::from("/tmp/test_model.gguf"),
+    )
+    .unwrap();
     let embedded_arc: Arc<dyn CommandGenerator> = Arc::new(embedded);
 
     // Create vLLM backend with unreachable URL
@@ -134,7 +138,11 @@ async fn test_auth_failure_fallback_no_retry() {
     use cmdai::backends::embedded::{EmbeddedModelBackend, ModelVariant};
     use std::path::PathBuf;
 
-    let embedded = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), PathBuf::from("/tmp/test_model.gguf")).unwrap();
+    let embedded = EmbeddedModelBackend::with_variant_and_path(
+        ModelVariant::detect(),
+        PathBuf::from("/tmp/test_model.gguf"),
+    )
+    .unwrap();
     let embedded_arc: Arc<dyn CommandGenerator> = Arc::new(embedded);
 
     // Create vLLM backend with invalid API key
@@ -192,8 +200,8 @@ async fn test_vllm_generate_command_success() {
     .unwrap()
     .with_api_key("test-key".to_string());
 
-    let request = CommandRequest::new("list all files", ShellType::Bash)
-        .with_safety(SafetyLevel::Moderate);
+    let request =
+        CommandRequest::new("list all files", ShellType::Bash).with_safety(SafetyLevel::Moderate);
 
     let result = vllm.generate_command(&request).await;
 
@@ -239,7 +247,10 @@ fn test_vllm_parameter_validation() {
     .with_top_p(-0.5); // Too low
 
     // Values should be clamped to valid ranges
-    assert_eq!(vllm.temperature, 2.0, "Temperature should be clamped to max 2.0");
+    assert_eq!(
+        vllm.temperature, 2.0,
+        "Temperature should be clamped to max 2.0"
+    );
     assert_eq!(vllm.top_p, 0.0, "Top-p should be clamped to min 0.0");
 }
 
@@ -276,9 +287,15 @@ fn test_vllm_backend_info() {
 
     assert_eq!(info.backend_type, cmdai::models::BackendType::VLlm);
     assert_eq!(info.model_name, "codellama/CodeLlama-7b-hf");
-    assert!(!info.supports_streaming, "vLLM backend doesn't support streaming");
+    assert!(
+        !info.supports_streaming,
+        "vLLM backend doesn't support streaming"
+    );
     assert!(info.max_tokens > 0, "Max tokens must be positive");
-    assert!(info.typical_latency_ms > 0, "Latency estimate must be positive");
+    assert!(
+        info.typical_latency_ms > 0,
+        "Latency estimate must be positive"
+    );
 }
 
 /// Contract: Health check functionality
@@ -335,7 +352,10 @@ fn test_vllm_openai_compatibility() {
     .with_api_key("sk-test".to_string());
 
     // Should accept OpenAI-compatible endpoint URLs
-    assert!(vllm.url.path().contains("v1"), "Should support /v1 endpoint");
+    assert!(
+        vllm.url.path().contains("v1"),
+        "Should support /v1 endpoint"
+    );
     assert!(vllm.api_key.is_some(), "Should support API key auth");
 }
 

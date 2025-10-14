@@ -52,3 +52,5 @@ pub use backends::{BackendInfo as BackendInfoTrait, CommandGenerator, GeneratorE
 pub use backends::embedded::{CpuBackend, EmbeddedConfig, EmbeddedModelBackend, InferenceBackend, ModelVariant};
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 pub use backends::embedded::MlxBackend;
+#[cfg(feature = "remote-backends")]
+pub use backends::remote::{OllamaBackend, VllmBackend};

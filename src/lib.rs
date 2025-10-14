@@ -7,7 +7,7 @@
 //!
 //! - [`models`] - Core data types (CommandRequest, GeneratedCommand, enums)
 //! - [`safety`] - Safety validation with dangerous command detection
-//! - [`backends`] - Command generation backends (Mock, Ollama, vLLM, MLX)
+//! - [`backends`] - Command generation backends (Embedded, Ollama, vLLM)
 //! - [`cli`] - CLI interface and argument parsing
 //! - [`cache`] - Model caching with integrity validation
 //! - [`config`] - Configuration management with TOML support
@@ -46,3 +46,9 @@ pub use config::{ConfigError, ConfigManager};
 pub use execution::{ExecutionError, PlatformDetector, ShellDetector};
 pub use logging::{LogConfig, LogConfigBuilder, LogError, LogFormat, LogOutput, Logger, Redaction};
 pub use model_loader::ModelLoader;
+
+// Re-export backend types
+pub use backends::{BackendInfo as BackendInfoTrait, CommandGenerator, GeneratorError};
+pub use backends::embedded::{CpuBackend, EmbeddedConfig, InferenceBackend, ModelVariant};
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+pub use backends::embedded::MlxBackend;

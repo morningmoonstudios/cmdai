@@ -375,7 +375,7 @@ async fn test_vllm_concurrent_requests() {
     for i in 0..3 {
         let vllm_clone = Arc::clone(&vllm);
         let handle = tokio::spawn(async move {
-            let request = CommandRequest::new(&format!("test command {}", i), ShellType::Bash);
+            let request = CommandRequest::new(format!("test command {}", i), ShellType::Bash);
             vllm_clone.generate_command(&request).await
         });
         handles.push(handle);

@@ -91,7 +91,7 @@ async fn test_e2e_embedded_workflow() {
         println!("Testing E2E case: {}", test_case.name);
 
         let start_time = Instant::now();
-        let request = CommandRequest::new(test_case.natural_language, test_case.shell.clone());
+        let request = CommandRequest::new(test_case.natural_language, test_case.shell);
 
         let result = backend.generate_command(&request).await;
         let generation_time = start_time.elapsed();
@@ -242,7 +242,7 @@ async fn test_shell_type_integration() {
     ];
 
     for shell in test_shells {
-        let request = CommandRequest::new("list files", shell.clone());
+        let request = CommandRequest::new("list files", shell);
         let result = backend.generate_command(&request).await;
 
         assert!(result.is_ok(), "Should work with shell type: {:?}", shell);
@@ -313,7 +313,7 @@ async fn test_concurrent_request_handling() {
         let backend_clone = backend.clone();
         let handle = tokio::spawn(async move {
             let request =
-                CommandRequest::new(&format!("list files in directory {}", i), ShellType::Bash);
+                CommandRequest::new(format!("list files in directory {}", i), ShellType::Bash);
             backend_clone.generate_command(&request).await
         });
         handles.push(handle);

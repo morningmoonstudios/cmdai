@@ -2,10 +2,16 @@
 // These tests verify the behavioral contract defined in:
 // specs/004-implement-ollama-and/contracts/mlx-backend.md
 
+use cmdai::backends::embedded::ModelVariant;
+
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use std::path::PathBuf;
+
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use std::time::{Duration, Instant};
 
-use cmdai::backends::embedded::{EmbeddedConfig, ModelVariant};
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+use cmdai::backends::embedded::EmbeddedConfig;
 
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use cmdai::backends::embedded::{InferenceBackend, MlxBackend};
@@ -14,6 +20,7 @@ use cmdai::backends::embedded::{InferenceBackend, MlxBackend};
 use cmdai::backends::GeneratorError;
 
 // Helper function to get test model path
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 fn test_model_path() -> PathBuf {
     PathBuf::from("/tmp/test_model.gguf")
 }
@@ -28,7 +35,7 @@ fn test_mlx_backend_unavailable_on_other_platforms() {
 
     // On non-Apple Silicon platforms, MlxBackend should not be accessible
     // This is enforced by conditional compilation
-    assert!(true, "MlxBackend correctly unavailable on this platform");
+    // Test passes by virtue of compiling successfully without MlxBackend
 }
 
 /// CR-MLX-001: Platform Availability on Apple Silicon

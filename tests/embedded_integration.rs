@@ -37,9 +37,8 @@ async fn test_embedded_backend_basic_workflow() {
 #[tokio::test]
 async fn test_embedded_command_generation() {
     let model_path = test_model_path();
-    let mut backend =
-        EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), model_path)
-            .expect("Failed to create embedded backend");
+    let backend = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), model_path)
+        .expect("Failed to create embedded backend");
 
     // Model loads lazily on first use, no explicit load needed
 
@@ -58,16 +57,15 @@ async fn test_embedded_command_generation() {
 #[tokio::test]
 async fn test_embedded_backend_missing_model() {
     let invalid_path = PathBuf::from("/nonexistent/model.gguf");
-    let mut backend =
-        EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), invalid_path)
-            .expect("Backend creation should succeed even with invalid path");
+    let backend = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), invalid_path)
+        .expect("Backend creation should succeed even with invalid path");
 
     // Should still be available (lazy loading)
     assert!(backend.is_available().await);
 
     // But inference should fail when model doesn't exist
     let request = CommandRequest::new("test", ShellType::Bash);
-    let result = backend.generate_command(&request).await;
+    let _result = backend.generate_command(&request).await;
     // Note: In current implementation this may succeed with simulation,
     // but in production it would fail
     // assert!(result.is_err());
@@ -112,7 +110,7 @@ async fn test_concurrent_inference() {
     for i in 0..3 {
         let backend_clone = backend_arc.clone();
         let handle = tokio::spawn(async move {
-            let request = CommandRequest::new(&format!("list files {}", i), ShellType::Bash);
+            let request = CommandRequest::new(format!("list files {}", i), ShellType::Bash);
             backend_clone.generate_command(&request).await
         });
         handles.push(handle);
@@ -234,7 +232,7 @@ async fn test_shell_types() {
     ];
 
     for shell in shells {
-        let request = CommandRequest::new("list files", shell.clone());
+        let request = CommandRequest::new("list files", shell);
         let result = backend.generate_command(&request).await;
         assert!(result.is_ok(), "Failed for shell type: {:?}", shell);
 

@@ -5,11 +5,10 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::Mutex;
 
 use cmdai::backends::embedded::{EmbeddedConfig, EmbeddedModelBackend, ModelVariant};
 use cmdai::backends::{CommandGenerator, GeneratorError};
-use cmdai::models::{CommandRequest, GeneratedCommand, SafetyLevel, ShellType};
+use cmdai::models::{CommandRequest, SafetyLevel, ShellType};
 
 // Helper function to get test model path
 fn test_model_path() -> PathBuf {
@@ -75,7 +74,7 @@ async fn test_zero_config_immediate_availability() {
 #[ignore] // Ignore by default as it requires actual model
 async fn test_performance_targets_mlx_vs_cpu() {
     let backend = create_test_backend().expect("Failed to create backend");
-    let info = backend.backend_info();
+    let _info = backend.backend_info();
 
     let request = CommandRequest::new("list all files", ShellType::Bash);
 
@@ -256,7 +255,7 @@ async fn test_thread_safe_concurrent_requests() {
         let backend_clone = Arc::clone(&backend);
 
         let handle = tokio::spawn(async move {
-            let request = CommandRequest::new(&format!("list files {}", i), ShellType::Bash);
+            let request = CommandRequest::new(format!("list files {}", i), ShellType::Bash);
             backend_clone.generate_command(&request).await
         });
 

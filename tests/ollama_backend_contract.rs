@@ -10,6 +10,7 @@ use cmdai::models::{CommandRequest, SafetyLevel, ShellType};
 use url::Url;
 
 // Placeholder struct - will be replaced with actual OllamaBackend implementation
+#[allow(dead_code)]
 struct OllamaBackend {
     url: Url,
     model: String,
@@ -316,7 +317,7 @@ async fn test_ollama_concurrent_requests() {
     for i in 0..3 {
         let ollama_clone = Arc::clone(&ollama);
         let handle = tokio::spawn(async move {
-            let request = CommandRequest::new(&format!("test {}", i), ShellType::Bash);
+            let request = CommandRequest::new(format!("test {}", i), ShellType::Bash);
             ollama_clone.generate_command(&request).await
         });
         handles.push(handle);

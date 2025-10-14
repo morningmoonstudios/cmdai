@@ -10,8 +10,14 @@ pub mod cpu;
 // Common types and traits
 mod common;
 
+// Main embedded model backend
+mod embedded_backend;
+
 // Re-export common types
 pub use common::{EmbeddedConfig, InferenceBackend, ModelVariant};
+
+// Re-export main backend
+pub use embedded_backend::EmbeddedModelBackend;
 
 // Re-export platform-specific backend
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]

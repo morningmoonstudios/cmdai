@@ -94,11 +94,11 @@ impl CommandGenerator for VllmBackend {
 /// MUST fallback to embedded model when vLLM backend fails or is unavailable
 #[tokio::test]
 async fn test_fallback_to_embedded_on_connection_failure() {
-    use cmdai::backends::embedded::CpuBackend;
+    use cmdai::backends::embedded::{EmbeddedModelBackend, ModelVariant};
     use std::path::PathBuf;
 
     // Create embedded fallback backend
-    let embedded = CpuBackend::new(PathBuf::from("/tmp/test_model.gguf")).unwrap();
+    let embedded = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), PathBuf::from("/tmp/test_model.gguf")).unwrap();
     let embedded_arc: Arc<dyn CommandGenerator> = Arc::new(embedded);
 
     // Create vLLM backend with unreachable URL
@@ -131,10 +131,10 @@ async fn test_fallback_to_embedded_on_connection_failure() {
 /// MUST fallback immediately on authentication failures (401/403)
 #[tokio::test]
 async fn test_auth_failure_fallback_no_retry() {
-    use cmdai::backends::embedded::CpuBackend;
+    use cmdai::backends::embedded::{EmbeddedModelBackend, ModelVariant};
     use std::path::PathBuf;
 
-    let embedded = CpuBackend::new(PathBuf::from("/tmp/test_model.gguf")).unwrap();
+    let embedded = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), PathBuf::from("/tmp/test_model.gguf")).unwrap();
     let embedded_arc: Arc<dyn CommandGenerator> = Arc::new(embedded);
 
     // Create vLLM backend with invalid API key

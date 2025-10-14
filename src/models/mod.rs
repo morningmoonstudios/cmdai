@@ -231,11 +231,13 @@ impl std::fmt::Display for SafetyLevel {
 pub enum BackendType {
     /// Mock backend for testing
     Mock,
+    /// Embedded model backend (Qwen with MLX/CPU)
+    Embedded,
     /// Ollama local LLM backend
     Ollama,
     /// vLLM HTTP API backend
     VLlm,
-    /// Apple Silicon MLX backend
+    /// Apple Silicon MLX backend (legacy)
     Mlx,
 }
 
@@ -245,6 +247,7 @@ impl std::str::FromStr for BackendType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "mock" => Ok(Self::Mock),
+            "embedded" => Ok(Self::Embedded),
             "ollama" => Ok(Self::Ollama),
             "vllm" => Ok(Self::VLlm),
             "mlx" => Ok(Self::Mlx),
@@ -257,6 +260,7 @@ impl std::fmt::Display for BackendType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Mock => write!(f, "mock"),
+            Self::Embedded => write!(f, "embedded"),
             Self::Ollama => write!(f, "ollama"),
             Self::VLlm => write!(f, "vllm"),
             Self::Mlx => write!(f, "mlx"),

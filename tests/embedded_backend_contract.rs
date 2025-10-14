@@ -7,8 +7,8 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::Mutex;
 
-use cmdai::backends::embedded::{CpuBackend, EmbeddedConfig, ModelVariant};
-use cmdai::backends::{BackendInfo, CommandGenerator, GeneratorError};
+use cmdai::backends::embedded::{EmbeddedConfig, EmbeddedModelBackend, ModelVariant};
+use cmdai::backends::{CommandGenerator, GeneratorError};
 use cmdai::models::{CommandRequest, GeneratedCommand, SafetyLevel, ShellType};
 
 // Helper function to get test model path
@@ -19,11 +19,9 @@ fn test_model_path() -> PathBuf {
 }
 
 // Helper function to create test EmbeddedModelBackend
-// NOTE: This will fail to compile until EmbeddedModelBackend is fully implemented
-fn create_test_backend() -> Result<impl CommandGenerator, GeneratorError> {
-    // This is a placeholder - will be replaced with actual EmbeddedModelBackend
-    // when it's implemented in Phase 4.3
-    CpuBackend::new(test_model_path())
+fn create_test_backend() -> Result<EmbeddedModelBackend, GeneratorError> {
+    // Use the actual EmbeddedModelBackend with test model path
+    EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), test_model_path())
 }
 
 /// CR-EMB-001: Offline Operation (CRITICAL)
@@ -179,7 +177,7 @@ async fn test_lazy_loading_on_first_inference() {
 async fn test_error_handling_model_load_failure() {
     // Try to create backend with non-existent model
     let invalid_path = PathBuf::from("/nonexistent/model.gguf");
-    let backend_result = CpuBackend::new(invalid_path);
+    let backend_result = EmbeddedModelBackend::with_variant_and_path(ModelVariant::detect(), invalid_path);
 
     // Constructor should either:
     // 1. Return error if model path is validated during construction, OR

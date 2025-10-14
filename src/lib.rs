@@ -29,6 +29,7 @@ pub mod cli;
 pub mod config;
 pub mod execution;
 pub mod logging;
+pub mod model_loader;
 pub mod models;
 pub mod safety;
 
@@ -44,3 +45,4 @@ pub use cache::{CacheError, CacheManager, CacheStats, IntegrityReport};
 pub use config::{ConfigError, ConfigManager};
 pub use execution::{ExecutionError, PlatformDetector, ShellDetector};
 pub use logging::{LogConfig, LogConfigBuilder, LogError, LogFormat, LogOutput, Logger, Redaction};
+pub use model_loader::ModelLoader;

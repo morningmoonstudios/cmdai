@@ -1,0 +1,24 @@
+# Git LFS configuration for large model files
+
+# GGUF quantized models (large binary files)
+*.gguf filter=lfs diff=lfs merge=lfs -text
+
+# Safetensors model weights
+*.safetensors filter=lfs diff=lfs merge=lfs -text
+
+# PyTorch model weights
+*.bin filter=lfs diff=lfs merge=lfs -text
+*.pt filter=lfs diff=lfs merge=lfs -text
+*.pth filter=lfs diff=lfs merge=lfs -text
+
+# TensorFlow model weights
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.pb filter=lfs diff=lfs merge=lfs -text
+
+# ONNX model files
+*.onnx filter=lfs diff=lfs merge=lfs -text
+
+# Tokenizer vocabulary files (can be large)
+# Note: tokenizer.json is 7MB but still manageable without LFS
+# Uncomment if needed:
+# tokenizer.json filter=lfs diff=lfs merge=lfs -text

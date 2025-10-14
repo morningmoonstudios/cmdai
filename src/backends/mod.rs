@@ -1,6 +1,8 @@
 // Backends module - LLM backend trait and implementations
 // These are placeholder stubs - tests should fail until proper implementation
 
+pub mod embedded;
+
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;

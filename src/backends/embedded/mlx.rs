@@ -59,12 +59,12 @@ impl InferenceBackend for MlxBackend {
 
         // Simulate MLX inference (placeholder - actual MLX integration would use mlx-rs)
         // This simulates fast GPU inference with consistent JSON output
-        let response = if prompt.contains("list files") {
+        let response = if prompt.contains("delete") || prompt.contains("rm") {
+            r#"{"cmd": "echo 'Please clarify your request'"}"#
+        } else if prompt.contains("list files") {
             r#"{"cmd": "ls -la"}"#
         } else if prompt.contains("find") {
             r#"{"cmd": "find . -name '*.txt'"}"#
-        } else if prompt.contains("delete") || prompt.contains("rm") {
-            r#"{"cmd": "echo 'Please clarify your request'"}"#
         } else {
             r#"{"cmd": "ls"}"#
         };

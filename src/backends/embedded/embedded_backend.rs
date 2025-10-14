@@ -92,6 +92,31 @@ impl EmbeddedModelBackend {
         &self.model_path
     }
 
+    /// Explicitly load the model (usually not needed as loading is lazy)
+    pub async fn load_model(&mut self) -> Result<(), GeneratorError> {
+        // Ensure model is downloaded
+        self.model_loader
+            .download_model_if_missing(self.model_variant)
+            .await
+            .map_err(|e| GeneratorError::BackendUnavailable {
+                reason: format!("Failed to download model: {}", e),
+            })?;
+
+        // Load the model in the backend
+        let mut backend = self.backend.lock().await;
+        backend.load().await.map_err(|e| GeneratorError::GenerationFailed {
+            details: format!("Failed to load model: {}", e),
+        })
+    }
+
+    /// Explicitly unload the model to free memory
+    pub async fn unload_model(&mut self) -> Result<(), GeneratorError> {
+        let mut backend = self.backend.lock().await;
+        backend.unload().await.map_err(|e| GeneratorError::Internal {
+            message: format!("Failed to unload model: {}", e),
+        })
+    }
+
     /// Generate system prompt for shell command generation
     fn create_system_prompt(&self, request: &CommandRequest) -> String {
         format!(

@@ -22,6 +22,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync"
 # Serialization and configuration
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde_yaml = "0.9"
 toml = "0.8"
 config = "0.13"
 
@@ -39,6 +40,7 @@ tracing-appender = "0.2"
 dialoguer = "0.11"
 colored = "2"
 indicatif = "0.17"
+atty = "0.2"
 
 # Cross-platform support
 directories = "5"
@@ -48,7 +50,7 @@ os_info = "3.7"
 sysinfo = "0.29"
 
 # Model integration (Hugging Face Hub)
-hf-hub = "0.3"
+hf-hub = { version = "0.3", features = ["tokio"] }
 url = "2.5"
 
 # Date/time handling
@@ -67,6 +69,15 @@ async-trait = "0.1"
 # Optional MLX support for Apple Silicon (behind feature flag)
 cxx = { version = "1.0", optional = true }
 
+# Embedded model inference - MLX for Apple Silicon
+[target.'cfg(all(target_os = "macos", target_arch = "aarch64"))'.dependencies]
+mlx-rs = { version = "0.25", optional = true }
+
+# Embedded model inference - Candle for CPU (cross-platform)
+candle-core = { version = "0.9", optional = true }
+candle-transformers = { version = "0.9", optional = true }
+tokenizers = { version = "0.15", features = ["http"] }
+
 [dev-dependencies]
 tokio-test = "0.4"
 tempfile = "3"
@@ -80,11 +91,13 @@ name = "performance"
 harness = false
 
 [features]
-default = ["mock-backend"]
+default = ["embedded-cpu"]
 mock-backend = []
 remote-backends = ["reqwest", "tokio/net"]
-mlx = ["cxx"]
-full = ["remote-backends", "mlx"]
+embedded-mlx = ["cxx", "mlx-rs"]
+embedded-cpu = ["candle-core", "candle-transformers"]
+embedded = ["embedded-cpu"]  # Alias for embedded model support
+full = ["remote-backends", "embedded-mlx", "embedded-cpu"]
 
 [profile.release]
 # Optimize for binary size (<50MB target)

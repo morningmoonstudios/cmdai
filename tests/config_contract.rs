@@ -108,7 +108,11 @@ cache_max_size_gb = 5
     let config_manager = ConfigManager::with_config_path(config_path).unwrap();
     let result = config_manager.load();
 
-    assert!(result.is_ok(), "Should parse valid TOML: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Should parse valid TOML: {:?}",
+        result.err()
+    );
 
     let config = result.unwrap();
     assert_eq!(config.safety_level, SafetyLevel::Strict);
